@@ -1,8 +1,11 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { userModel } from "./models/schemaModel.js";
-import { validateLoginUser, validateRegisterUser } from "./validationZod.js";
+import { userModel } from "../models/schemaModel.js";
+import {
+  validateLoginUser,
+  validateRegisterUser,
+} from "../middlewares/validationZod.js";
 
 const app = express();
 
@@ -43,7 +46,7 @@ const userSignup = async (req, res) => {
       return res.status(500).json({ error: "Error creating user" });
     }
 
-    const token = jwt.sign({ _id: user._id }, "Aditi@07hooda");
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
     return res
       .status(201)
       .cookie("token", token, {
@@ -81,7 +84,7 @@ const userSignin = async (req, res) => {
   if (!passwordMatch) {
     return res.status(403).send("Invalid Password");
   }
-  const token = jwt.sign({ _id: userFound._id }, "Aditi@07hooda");
+  const token = jwt.sign({ _id: userFound._id }, process.env.JWT_SECRET);
   res.cookie("token", token, {
     httpOnly: true,
     expires: new Date(Date.now() + 60 * 1000),
@@ -97,29 +100,11 @@ const userSignout = (req, res) => {
 };
 
 const userDetail = (req, res) => {
-  const id = "myid";
   const { token } = req.cookies;
-  console.log(token);
+  if(!token){
+    res.status(404).send("Not found")
+  }
   res.send("token found");
 };
-
-// const isAuthenticated = async (req, res, next) => {
-//   const token = req.cookies.token;
-//   console.log("Token:", token);
-
-//   if (token) {
-//     try {
-//       const decoded = jwt.verify(token, "Aditi@07hooda");
-//       console.log("Decoded:", decoded);
-//       req.user = await userModel.findById(decoded._id);
-//       next();
-//     } catch (error) {
-//       console.error("Token verification failed:", error);
-//       res.status(401).send("Authentication failed");
-//     }
-//   } else {
-//     res.status(401).send("Authentication failed. no token found");
-//   }
-// };
 
 export { userSignin, userSignout, userSignup, userDetail };

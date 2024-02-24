@@ -1,6 +1,9 @@
 import express from "express";
-import { validateCreateTodo, validateUpdateTodo } from "./validationZod.js";
-import { taskModel } from "./models/schemaModel.js";
+import {
+  validateCreateTodo,
+  validateUpdateTodo,
+} from "../middlewares/validationZod.js";
+import { taskModel } from "../models/schemaModel.js";
 
 const app = express();
 
@@ -25,7 +28,6 @@ const createTodo = async (req, res) => {
       .status(201)
       .json({ message: "Task created successfully", task: createdTask });
   } catch (error) {
-    console.error("Error creating task:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -59,7 +61,7 @@ const deleteTodo = async (req, res) => {
     }
     res.send("Task deleted");
   } catch (error) {
-    console.log("Error:", error);
+    res.status(404).json({ message: "Not Found!" });
   }
 };
 
@@ -69,14 +71,10 @@ const readTodo = async (req, res) => {
     const todoList = await taskModel.find({ user: userId });
 
     res.status(200).json({ todoList }); // Wrap todoList in an object
-
   } catch (error) {
-    console.error("Error fetching TODOs:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
 
 const completeTodo = async (req, res) => {
   const { _id } = req.body;
